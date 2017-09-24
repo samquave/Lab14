@@ -8,6 +8,7 @@
   "author": "Platypi",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "express": "^4.15.4"
   },
   "devDependencies": {

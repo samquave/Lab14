@@ -54,8 +54,8 @@ function readFile(filePath, encoding) {
             } else {
                 resolve(data);
             }
-        })
-    })
+        });
+    });
 }
 
 function writeFile(filePath, data) {
@@ -66,6 +66,6 @@ function writeFile(filePath, data) {
             } else {
                 resolve();
             }
-        })
-    })
+        });
+    });
 }

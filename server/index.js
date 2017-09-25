@@ -2,69 +2,70 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
 var fs = require('fs');
-var app = express();
-app.use(bodyParser.json());
 
 
 
 
 var clientPath = path.join(__dirname, '../client');
-var dataPath = (path.join(__dirname, '/data.json'));
+var dataPath = (path.join(__dirname, 'data.json'));
+var app = express();
 app.use(express.static(clientPath));
 
+app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
-    res.sendFile('index.html');
-    res.send();
 
-});
+
+
+
 
 app.route('/api/chirps')
     .get(function (req, res) {
 
-        res.sendFile(path.join(__dirname + '/data.json'));
-        res.send();
+        res.sendFile(dataPath);
+
     }).post(function (req, res) {
-        fs.readFile(dataPath, 'utf8', function (err, fileContents) {
-            if (err) {
-                res.send(500);
+        var newChirp = req.body;
+        readFile(dataPath, 'utf8')
+            .then(function (fileContents) {
 
-            } else {
-                var chirps = fileContents;
-                var incomingData = '';
-                req.on('data', function (chunk) {
-                    incomingData += chunk;
-                });
-                req.on('end', function () {
-                    var newChirps = incomingData;
-                    chirps.push(newChirps);
-                    
-                    res.status(201);
-                    res.send(JSON.stringify({
-                        message: req.body.message,
-                        user: req.body.user,
-                        timestamp: req.body.timestamp
-                    }));
-                    fs.writeFile(dataPath, chirps, function (err){
-                        if (err) {
-                            res.send(500);
-                        }else {
-                            res.send();
-                        }
-                    })
-                });
-            };
-        });
+                var chirps = JSON.parse(fileContents);
 
+                chirps.push(newChirp);
+                return writeFile(dataPath, JSON.stringify(chirps));
+
+            }).then(function () {
+                res.sendStatus(201);
+            }).catch(function (err) {
+                console.log(err);
+                res.sendStatus(500);
+            });
 
     });
 
 
 
-
-
-
-
-
-
 app.listen(3000);
+
+function readFile(filePath, encoding) {
+    return new Promise(function (resolve, reject) {
+        fs.readFile(filePath, encoding, function (err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        })
+    })
+}
+
+function writeFile(filePath, data) {
+    return new Promise(function (resolve, reject) {
+        fs.writeFile(filePath, data, function (err) {
+            if (err) {
+                reject(err)
+            } else {
+                resolve();
+            }
+        })
+    })
+}
